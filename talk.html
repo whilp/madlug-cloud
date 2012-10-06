@@ -25,7 +25,7 @@
   h2 { font-size: 2em; }
   h3 { font-size: 1.2em; }
   a { text-decoration: none; }
-  li { margin: .2em 0 .2em 0; }
+  li { margin: .4em 0 .4em 0; }
   ul { margin: .5em 0 .8em 0; }
   /* pseudo-element for background positioning */
   .content:before { 
@@ -81,19 +81,134 @@ class: center, middle
 ---
 
 # AWS
-- 
+- 8 regions
+  - geographically isolated
+  - other regions scattered across the globe (Ireland, Singapore, Tokyo, Sao Paolo)
+  - us-east-1 > us-west-1 > us-west-2
+    - us-east-1 gets new features before other regions
+    - many tools default to us-east-1
+- several availability zones per region
+  - physically isolated
+  - your zones are probably not my zones
 
 ---
 
-# AWS
+# AWS products
+- EC2 (infrastructure), EBS (block storage), ELB (load balancing), ASG (autoscaling)
+- EMR (elastic map/reduce)
+- S3 (storage), Cloudfront (CDN)
+- Dynamo (nosql), RDS (MySQL)
+- VPC (virtual private cloud), DirectConnect (leased lines)
+- SES (email), SQS (queues), SNS (notifications)
 
 ---
 
 # Simple in AWS
+- ~90 instances running Ubuntu
+  - managed and bootstrapped with Chef
+- some ELB, many HAProxies for internal and external APIs
+- polyglot service oriented architecture
+  - Scala, Clojure, (J)Ruby
+- main data in postgres, supporting data in S3
+- light use of more esoteric products (SES, SQS, VPC)
 
 ---
 
-# AWS API
+# getting started
+
+Export your credentials:
+
+    .bash
+    $ export AWS_ACCESS_KEY_ID=...
+    $ export AWS_SECRET_ACCESS_KEY=...
+
+Install `boto`:
+    
+    $ pip install boto
+    $ python
+    >>> import os, pprint
+    >>> import boto, boto.ec2
+
+Connect to EC2:
+
+    >>> ec2 = boto.ec2.connect_to_region("us-west-1")
+
+---
+
+# key pairs
+
+EC2 uses SSH key pairs to authorize access to new instances.
+
+Import a key pair:
+
+    >>> contents = open(os.path.expanduser("~/.ssh/id_rsa.pub")).read()
+    >>> key = ec2.import_key_pair(os.getenv("USER"), contents)
+
+---
+
+# Ubuntu images
+
+Images are pre-baked VMs; vendors (like Ubuntu) make them available, or you can create your own.
+
+List available Ubuntu images:
+
+    >>> images = ec2.get_all_images(owners=["099720109477"],
+    ...   filters={"architecture":"x86_64",
+    ...           "root-device-type":"ebs",
+    ...           "image-type":"machine"})
+    >>> images = dict((i.name, i) for i in images)
+    >>> name = "ubuntu/images/ebs/ubuntu-precise-12.04-amd64-server-20121001"
+    >>> image = images[name]
+    >>> image
+    Image:ami-0d153248
+
+---
+
+# security groups
+
+Network access to running instances is controlled by security groups.
+
+Create a new security group allowing SSH access:
+
+    >>> base = ec2.create_security_group("base", "shared by all instances")
+    >>> base.authorize('tcp', 22, 22, '0.0.0.0/0')
+    >>> base.rules
+    [IPPermissions:tcp(22-22)]
+
+- compose multiple groups in a single instance
+- an instance's security groups cannot be changed once it is created
+- map security groups to roles (`base`, `web`, `db`)
+
+---
+
+# run an instance
+
+    .python
+    >>> reservation = ec2.run_instances(image.id,
+    ...     min_count=1,
+    ...     max_count=1,
+    ...     key_name=key.name,
+    ...     security_groups=[base.name],
+    ...     instance_type="t1.micro")
+    >>> len(reservation.instances)
+    1
+    >>> (instance,) = reservation.instances
+
+---
+
+# explore your instance
+
+After a few minutes, the instance should start to run.
+
+    .python
+    >>> instance.dns_name
+    'ec2-50-18-33-160.us-west-1.compute.amazonaws.com'
+
+Connect to it with SSH:
+
+    .bash
+    $ ssh ubuntu@ec2-50-18-33-160.us-west-1.compute.amazonaws.com
+    Welcome to Ubuntu 12.04.1 LTS (GNU/Linux 3.2.0-31-virtual x86_64)
 
 ---
 
