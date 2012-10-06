@@ -25,6 +25,7 @@
   h2 { font-size: 2em; }
   h3 { font-size: 1.2em; }
   a { text-decoration: none; }
+  a:link, a:visited { color: #666; }
   li { margin: .4em 0 .4em 0; }
   ul { margin: .5em 0 .8em 0; }
   /* pseudo-element for background positioning */
@@ -53,19 +54,22 @@ class: center, middle
 ---
 
 # i'm will maier
+- [@wcmaier](https://twitter.com/wcmaier) / [wcmaier@m.aier.us](mailto:wcmaier@m.aier.us) / [will@simple.com](mailto:will@simple.com)
+- used to run a physics analysis center at [wisc.edu](http://physics.wisc.edu/)
 - operations engineer at [simple.com](https://simple.com/)
 - Simple: smart banking built for you
-  - save and spend wisely, get help from Real Live Portlanders, bank in realtime on your phone
-  - and data export in JSON ;)
+  - save and spend wisely
+  - get help from Real Live Portlanders
+  - bank in realtime on your phone
+  - data export in JSON ;)
   - we're [hiring](https://simple.com/careers/)
-- used to run a physics analysis center at wisc.edu
 
 ---
 
 # what even are clouds?
-- utility computing (not magic)
+- utility computing
 - public vs private vs hybrid
-- stuff as a service: infrastructure, platform, software
+- stuff as a service
   - infrastructure: Amazon Web Services, Google Compute Engine, Joyent, Windows Azure, OpenStack
   - platform: Heroku, Google App Engine, Joyent, Windows Azure
   - software: Google Apps, iCloud, 37signals, Salesforce
@@ -90,7 +94,7 @@ class: center, middle
   - other regions scattered across the globe (Ireland, Singapore, Tokyo, Sao Paolo)
   - us-east-1 > us-west-1 > us-west-2
     - us-east-1 gets new features before other regions
-    - many tools default to us-east-1
+    - many tools default to us-east-1 (so it's crowded)
 - several availability zones per region
   - physically isolated
   - your zones are probably not my zones
@@ -130,7 +134,7 @@ Install `boto`:
     
     $ pip install boto
     $ python
-    >>> import os, pprint
+    >>> import os
     >>> import boto, boto.ec2
 
 Connect to EC2:
@@ -282,8 +286,10 @@ A cloud config:
 
 - AWS gives you incredible flexibility
   - give devs as much access as possible
-  - audit account usage and automate cleanup/fault testing (Netflix's [Simian Army](https://github.com/Netflix/SimianArmy))
-  - use advanced products, but understand tradeoffs
+  - audit account usage
+  - automate cleanup/fault testing (Netflix's [Simian Army](https://github.com/Netflix/SimianArmy))
+- monitor everything
+- use advanced products, but understand tradeoffs
 - you must design for failure
   - …but you should also do that in a datacenter
 - API compatibility is a mirage
