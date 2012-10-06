@@ -263,14 +263,15 @@ Use IAM to create credentials with limited access:
     >>> import json
     >>> import boto.iam
     >>> iam = boto.iam.connect_to_region("universal")
-    >>> dev = iam.create_group("dev")
-    >>> alice = iam.create_user("alice")
-    >>> iam.add_user_to_group(dev.name, alice.name)
-    >>> iam.put_group_policy(dev.name, "s3-readonly", 
+    >>> iam.create_group("dev")
+    >>> iam.create_user("alice")
+    >>> iam.add_user_to_group("dev", "alice")
+    >>> iam.put_group_policy("dev", "s3-readonly", 
     ...   json.dumps(dict(
     ...     Action=["s3:Get*", "s3:List*"],
     ...     Effect="Allow",
     ...     Resource="*"))
+    >>> iam.create_access_key("alice")
 
 ---
 
