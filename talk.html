@@ -198,11 +198,13 @@ Create a new security group allowing SSH access:
     1
     >>> (instance,) = reservation.instances
 
+…and then wait; it can take several minutes for the instance to start running.
+
 ---
 
 # explore your instance
 
-After a few minutes, the instance should start to run.
+After the instance is running, it will be assigned a public DNS name:
 
     .python
     >>> instance.dns_name
@@ -214,12 +216,79 @@ Connect to it with SSH:
     $ ssh ubuntu@ec2-50-18-33-160.us-west-1.compute.amazonaws.com
     Welcome to Ubuntu 12.04.1 LTS (GNU/Linux 3.2.0-31-virtual x86_64)
 
+And don't forget to clean up when you're done:
+
+    .python
+    >>> instance.terminate()
+
 ---
 
-# AWS patterns
-- fog/boto
-- vagrant
-- cloudformation, ASG
+# so what?
+- fully programmable provisioning system
+- test an idea in a few minutes
+- `max_count=n`
+- `user_data`/`cloud-init`
+
+A cloud config:
+
+    .yaml
+    #cloud-config
+    apt_upgrade: true
+    runcmd:
+      - curl -L http://www.opscode.com/chef/install.sh | bash
+
+---
+
+# manage your instances
+
+- use config management to rebuild instances from scratch
+  - stuff breaks all the time
+  - need to scale
+- Chef and Puppet work well in the cloud
+- run server-client or masterless
+
+---
+
+# work offline
+
+    .bash
+    $ vagrant box add precise64 http://files.vagrantup.com/precise64.box
+    $ vagrant init precise64
+    $ vagrant up
+    $ vagrant ssh
+
+- [Vagrant](http://vagrantup.com) is a handy wrapper on top of [Virtualbox](https://www.virtualbox.org)
+- provision your Vagrant VMs with the same code you use in the cloud
+  - Chef or Puppet in server or masterless mode
+- good for testing offline (and without incurring AWS bills)
+
+---
+
+# prebake images
+
+    .python
+    >>> prebaked_id = ec2.create_image(
+    ...   instance_id=image.id,
+    ...   name="base-20121006",
+    ...   description="prebaked base as of 20121006")
+    >>> prebaked_image = ec2.get_image(prebaked_id)
+
+- needed for effective autoscaling
+- use Chef/Puppet to manage bootstrap
+
+---
+
+# things to consider
+
+- AWS gives you incredible flexibility
+  - give devs as much access as possible
+  - audit account usage and automate cleanup/fault testing (Netflix's [Simian Army](https://github.com/Netflix/SimianArmy))
+  - use advanced products, but understand tradeoffs
+- you must design for failure
+  - …but you should also do that in a datacenter
+- API compatibility is a mirage
+  - even if the APIs are compatible, the implementations will differ
+  - cross-cloud redundancy is really hard
 
 </textarea>
 <div id="slideshow"></div>
